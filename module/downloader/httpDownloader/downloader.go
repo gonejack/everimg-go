@@ -137,7 +137,6 @@ func (d *httpDownloader) mainRoutine() {
 							if e != io.EOF {
 								task.result.err = e
 							}
-
 							break
 						}
 					}
