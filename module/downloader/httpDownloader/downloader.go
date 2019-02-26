@@ -64,6 +64,9 @@ func (d *httpDownloader) DownloadAllToTemp(sources []string, timeout time.Durati
 	return d.DownloadAll(sources, targets, timeout, retryTimesForEach)
 }
 
+type readerFunc func(p []byte) (n int, err error)
+func (rf readerFunc) Read(p []byte) (n int, err error) { return rf(p) }
+
 func (d *httpDownloader) mainRoutine() {
 	for group := range d.taskGroups {
 		for _, t := range group.tasks {
@@ -110,26 +113,24 @@ func (d *httpDownloader) mainRoutine() {
 					}
 				}()
 
-				timeout := time.After(task.timeout)
-			loop:
-				for {
+				timer := time.After(task.timeout)
+				reader := readerFunc(func(p []byte) (int, error) {
 					select {
-					case <-timeout:
-						task.result.err = errors.New(fmt.Sprintf("timeout[limit=%s]", task.timeout))
-
-						break loop
+					case <-timer:
+						return 0, errors.New(fmt.Sprintf("timed out[limit=%s]", task.timeout))
 					default:
-						var n int64
-						var e error
+						return resp.Body.Read(p)
+					}
+				})
+				if d.speedThrottle == nil {
+					n, e := io.Copy(file, reader)
 
-						if d.speedThrottle == nil {
-							n, e = io.Copy(file, resp.Body)
-							if e == nil {
-								e = io.EOF
-							}
-						} else {
-							n, e = io.CopyN(file, resp.Body, int64(<-d.speedThrottle))
-						}
+					task.result.length = n
+					task.result.err = e
+				} else {
+					for {
+						n, e := io.CopyN(file, reader, int64(<-d.speedThrottle))
+
 						task.result.length += n
 
 						if e != nil {
@@ -137,7 +138,7 @@ func (d *httpDownloader) mainRoutine() {
 								task.result.err = e
 							}
 
-							break loop
+							break
 						}
 					}
 				}
@@ -146,12 +147,12 @@ func (d *httpDownloader) mainRoutine() {
 	}
 }
 func (d *httpDownloader) speedRoutine() {
-	if d.config.TransSpeedLimit > 0 {
+	if d.config.TotalSpeed > 0 {
 		d.speedThrottle = make(chan bytesize.ByteSize)
 
 		chunkNum := d.config.Concurrent * 10
 
-		chunk := d.config.TransSpeedLimit / bytesize.ByteSize(chunkNum)
+		chunk := d.config.TotalSpeed / bytesize.ByteSize(chunkNum)
 		if chunk <= bytesize.B {
 			chunk = bytesize.B
 		}
@@ -162,21 +163,10 @@ func (d *httpDownloader) speedRoutine() {
 		}
 
 		var ticker = time.Tick(tick)
-		var batch bytesize.ByteSize
 		for {
 			<-ticker
 
-			if chunk >= bytesize.KB {
-				d.speedThrottle <- chunk
-			} else {
-				batch += chunk
-
-				if batch >= bytesize.KB {
-					d.speedThrottle <- batch
-
-					batch = 0
-				}
-			}
+			d.speedThrottle <- chunk
 		}
 	}
 }
@@ -197,7 +187,6 @@ func New(config Config) *httpDownloader {
 
 	return d
 }
-
 func Default() *httpDownloader {
 	if defaultDownloader == nil {
 		defaultDownloader = New(DefaultConfig())

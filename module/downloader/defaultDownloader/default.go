@@ -17,21 +17,21 @@ func chooseDefaultDownloaderByURL(url string) downloader.Interface  {
 }
 
 func Download(url string, target string, timeout time.Duration, retries int) downloader.ResultInterface {
-	downloader := chooseDefaultDownloaderByURL(url)
+	d := chooseDefaultDownloaderByURL(url)
 
-	if downloader == nil {
+	if d == nil {
 		panic("no downloader found")
 	} else {
-		return downloader.Download(url, target, timeout, retries)
+		return d.Download(url, target, timeout, retries)
 	}
 }
 
 func DownloadToTemp(url string, timeout time.Duration, retries int) downloader.ResultInterface {
-	downloader := chooseDefaultDownloaderByURL(url)
+	d := chooseDefaultDownloaderByURL(url)
 
-	if downloader == nil {
+	if d == nil {
 		panic("no downloader found")
 	} else {
-		return downloader.DownloadToTemp(url, timeout, retries)
+		return d.DownloadToTemp(url, timeout, retries)
 	}
 }

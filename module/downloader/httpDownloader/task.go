@@ -1,6 +1,8 @@
 package httpDownloader
 
 import (
+	"fmt"
+	"github.com/inhies/go-bytesize"
 	"sync"
 	"time"
 )
@@ -38,5 +40,9 @@ func (r *taskResult) GetError() error {
 	return r.err
 }
 func (r *taskResult) GetInfo() string {
-	return r.info
+	duration := r.end.Sub(r.begin)
+	total := bytesize.ByteSize(r.length)
+	avg := float64(total) / duration.Seconds()
+
+	return fmt.Sprintf("Total: %s, Average: %s/s, Duration: %s", bytesize.ByteSize(r.length), bytesize.ByteSize(avg), duration.Round(time.Millisecond * 10))
 }

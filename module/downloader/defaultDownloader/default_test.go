@@ -1,13 +1,16 @@
 package defaultDownloader
 
 import (
-	"github.com/davecgh/go-spew/spew"
 	"testing"
 	"time"
 )
 
-func TestDownload(t *testing.T) {
-	res := Download("https://wx3.sinaimg.cn/large/a5640e63gy1g0fnrhy7rcj20k00zkmzf.jpg", "./abc.jpg", time.Minute, 1)
+func TestDownloadToTemp(t *testing.T) {
+	res := DownloadToTemp("http://wx4.sinaimg.cn/large/a2b75011ly1g0hij054ulg208c056kju.gif", time.Second * 30, 1)
 
-	spew.Dump(res)
+	if res.IsSuc() {
+		t.Logf("succeed: %s", res.GetInfo())
+	} else {
+		t.Errorf("failed: %s", res.GetError())
+	}
 }
