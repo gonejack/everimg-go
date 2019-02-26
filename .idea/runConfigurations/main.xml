@@ -1,0 +1,17 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="main" type="GoApplicationRunConfiguration" factoryName="Go Application" show_console_on_std_err="true" show_console_on_std_out="true">
+    <log_file alias="info" path="/var/folders/hd/w8sd1l2x2lg5gv85p9944h5c0000gn/T/main.INFO" />
+    <log_file alias="error" path="/var/folders/hd/w8sd1l2x2lg5gv85p9944h5c0000gn/T/main.ERROR" />
+    <log_file alias="warn" path="/var/folders/hd/w8sd1l2x2lg5gv85p9944h5c0000gn/T/main.WARNING" show_all="true" />
+    <module name="everimg-go" />
+    <working_directory value="$PROJECT_DIR$" />
+    <go_parameters value="-ldflags=&quot;-linkmode internal&quot;" />
+    <useCustomBuildTags value="true" />
+    <kind value="PACKAGE" />
+    <filePath value="$PROJECT_DIR$/src/main/main.go" />
+    <package value="everimg-go" />
+    <directory value="$PROJECT_DIR$" />
+    <output_directory value="$PROJECT_DIR$/out" />
+    <method v="2" />
+  </configuration>
+</component>
