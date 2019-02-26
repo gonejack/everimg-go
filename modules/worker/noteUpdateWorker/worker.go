@@ -1,6 +1,8 @@
 package noteUpdateWorker
 
-import "everimg-go/worker"
+import (
+	"github.com/spf13/viper"
+)
 
 const NOTE_UPDATE_WORKER = "noteUpdateWorker"
 
@@ -16,6 +18,6 @@ func (*updateWorker) Stop() {
 	panic("implement me")
 }
 
-func New(name string, conf string) worker.Interface {
+func New(name string, conf *viper.Viper) *updateWorker {
 	return &updateWorker{}
 }

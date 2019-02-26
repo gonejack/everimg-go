@@ -4,7 +4,7 @@
     <working_directory value="$PROJECT_DIR$" />
     <framework value="gotest" />
     <kind value="PACKAGE" />
-    <package value="everimg-go/module/downloader/defaultDownloader" />
+    <package value="everimg-go/utils/downloader/defaultDownloader" />
     <directory value="$PROJECT_DIR$" />
     <filePath value="$PROJECT_DIR$" />
     <method v="2" />
