@@ -1,10 +1,14 @@
 package httpDownloader
 
 import (
-	"github.com/davecgh/go-spew/spew"
+	"runtime"
 	"testing"
 	"time"
 )
+
+func init() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+}
 
 func Test_httpDownloader_Download(t *testing.T) {
 	urls := []string {
@@ -22,6 +26,10 @@ func Test_httpDownloader_Download(t *testing.T) {
 	}
 
 	for _, r := range Default().DownloadAllToTemp(urls, time.Second * 30, 1) {
-		spew.Dump(r)
+		if r.IsSuc() {
+			t.Logf("succeed: %s", r.GetInfo())
+		} else {
+			t.Errorf("failed: %s", r.GetError())
+		}
 	}
 }

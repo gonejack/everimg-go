@@ -1,8 +1,8 @@
 package defaultDownloader
 
 import (
-	"everimg-go/module/downloader"
-	"everimg-go/module/downloader/httpDownloader"
+	"everimg-go/utils/downloader"
+	"everimg-go/utils/downloader/httpDownloader"
 	"strings"
 	"time"
 )

@@ -15,7 +15,7 @@ func Init() {
 
 			return val
 		} else {
-			logger.Infof("环境变量[%s], 使用缺省值[%s]", key, def)
+			logger.Infof("环境变量[%s]为空, 使用缺省值[%s]", key, def)
 
 			_ = os.Setenv(key, def)
 

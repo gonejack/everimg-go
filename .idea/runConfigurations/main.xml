@@ -5,7 +5,6 @@
     <log_file alias="warn" path="/var/folders/hd/w8sd1l2x2lg5gv85p9944h5c0000gn/T/main.WARNING" show_all="true" />
     <module name="everimg-go" />
     <working_directory value="$PROJECT_DIR$" />
-    <go_parameters value="-ldflags=&quot;-linkmode internal&quot;" />
     <useCustomBuildTags value="true" />
     <kind value="PACKAGE" />
     <filePath value="$PROJECT_DIR$/src/main/main.go" />

@@ -17,4 +17,3 @@ type ResultInterface interface {
 	GetError() error
 	GetInfo() string
 }
-

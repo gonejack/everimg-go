@@ -11,6 +11,7 @@ type taskGroup struct {
 	tasks []*task
 	wg    *sync.WaitGroup
 }
+
 type task struct {
 	source     string
 	target     string
@@ -18,6 +19,7 @@ type task struct {
 	retryTimes int
 	result     *taskResult
 }
+
 type taskResult struct {
 	suc    bool
 	from   string

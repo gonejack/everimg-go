@@ -2,7 +2,7 @@ package httpDownloader
 
 import (
 	"errors"
-	"everimg-go/module/downloader"
+	"everimg-go/utils/downloader"
 	"fmt"
 	"github.com/inhies/go-bytesize"
 	"io"
@@ -65,6 +65,7 @@ func (d *httpDownloader) DownloadAllToTemp(sources []string, timeout time.Durati
 }
 
 type readerFunc func(p []byte) (n int, err error)
+
 func (rf readerFunc) Read(p []byte) (n int, err error) { return rf(p) }
 
 func (d *httpDownloader) mainRoutine() {
