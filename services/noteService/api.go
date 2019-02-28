@@ -1,6 +1,6 @@
 package noteService
 
-var instance = NewDefault()
+var srv = NewDefault()
 
 func Start() {
 

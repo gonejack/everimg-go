@@ -43,6 +43,7 @@ func (d *httpDownloader) DownloadAll(sources []string, targets []string, timeout
 		})
 		group.wg.Add(1)
 	}
+
 	d.taskGroups <- group
 
 	group.wg.Wait()
