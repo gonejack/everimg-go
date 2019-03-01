@@ -4,7 +4,6 @@ import (
 	"everimg-go/utils/downloader"
 	"everimg-go/utils/downloader/httpDownloader/internal/task"
 	"everimg-go/utils/downloader/httpDownloader/internal/taskGroup"
-	"github.com/inhies/go-bytesize"
 	"io/ioutil"
 	"time"
 )
@@ -12,10 +11,12 @@ import (
 var defaultDownloader *httpDownloader = nil
 
 type httpDownloader struct {
-	config        Config
-	taskThrottle  chan int
-	speedThrottle chan bytesize.ByteSize
-	taskGroups    chan *taskGroup.TaskGroup
+	config Config
+
+	taskFactory  *task.Factory
+	groupFactory *taskGroup.GroupFactory
+
+	groups chan *taskGroup.TaskGroup
 }
 
 func (d *httpDownloader) Download(source string, target string, timeout time.Duration, retryTimes int) downloader.ResultInterface {
@@ -28,11 +29,7 @@ func (d *httpDownloader) DownloadAll(sources []string, targets []string, timeout
 	var tasks []*task.Task
 
 	for idx, source := range sources {
-		t := task.New(source, targets[idx], timeoutForEach, retryTimesForEach)
-
-		t.SetSpeedThreshold(d.speedThrottle)
-
-		tasks = append(tasks, t)
+		tasks = append(tasks, d.taskFactory.NewTask(source, targets[idx], timeoutForEach, retryTimesForEach))
 	}
 
 	results = d.executeTasks(tasks)
@@ -52,56 +49,29 @@ func (d *httpDownloader) DownloadAllToTemp(sources []string, timeout time.Durati
 }
 
 func (d *httpDownloader) executeTasks(tasks []*task.Task) (results []downloader.ResultInterface) {
-	group := taskGroup.New(tasks)
-	group.SetTaskThreshold(d.taskThrottle)
+	group := d.groupFactory.NewGroup(tasks)
 
-	d.taskGroups <- group
+	d.groups <- group
 
 	return group.WaitForResults()
 }
 func (d *httpDownloader) mainRoutine() {
-	for group := range d.taskGroups {
+	for group := range d.groups {
 		group.Execute()
-	}
-}
-func (d *httpDownloader) speedRoutine() {
-	if d.config.TotalSpeed > 0 {
-		d.speedThrottle = make(chan bytesize.ByteSize)
-
-		chunkNum := d.config.Concurrent * 10
-
-		chunk := d.config.TotalSpeed / bytesize.ByteSize(chunkNum)
-		if chunk <= bytesize.B {
-			chunk = bytesize.B
-		}
-
-		tick := time.Second / time.Duration(chunkNum)
-		if tick <= 0 {
-			tick = time.Nanosecond
-		}
-
-		var ticker = time.Tick(tick)
-		for {
-			<-ticker
-
-			d.speedThrottle <- chunk
-		}
 	}
 }
 
 func New(config Config) *httpDownloader {
 	d := &httpDownloader{
-		config:       config,
-		taskThrottle: make(chan int, config.Concurrent),
-		taskGroups:   make(chan *taskGroup.TaskGroup, 100),
-	}
+		config: config,
 
-	for i := 0; i < config.Concurrent; i++ {
-		d.taskThrottle <- 1
+		taskFactory:  task.NewFactory(config.Concurrent, config.TotalSpeed),
+		groupFactory: taskGroup.NewFactory(config.Concurrent),
+
+		groups: make(chan *taskGroup.TaskGroup, 100),
 	}
 
 	go d.mainRoutine()
-	go d.speedRoutine()
 
 	return d
 }

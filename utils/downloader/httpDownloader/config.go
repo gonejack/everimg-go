@@ -7,9 +7,11 @@ type Config struct {
 	TotalSpeed bytesize.ByteSize
 }
 
-func DefaultConfig() Config {
-	return Config{
+func DefaultConfig() (c Config) {
+	c = Config{
 		Concurrent: 5,
 		TotalSpeed: 0,
 	}
+
+	return
 }

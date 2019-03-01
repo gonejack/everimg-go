@@ -36,16 +36,4 @@ func (group *TaskGroup) WaitForResults() (results []downloader.ResultInterface) 
 
 	return results
 }
-func (group *TaskGroup) SetTaskThreshold(threshold chan int) {
-	group.taskThreshold = threshold
-}
 
-func New(tasks []*task.Task) (group *TaskGroup) {
-	group = &TaskGroup{
-		tasks: tasks,
-		wg:    &sync.WaitGroup{},
-	}
-	group.wg.Add(len(tasks))
-
-	return
-}

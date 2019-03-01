@@ -18,7 +18,6 @@ type Task struct {
 	retryTimes int
 
 	speedThreshold chan bytesize.ByteSize
-	callback       func()
 
 	file   *os.File
 	resp   *http.Response
@@ -26,9 +25,6 @@ type Task struct {
 	result *taskResult.TaskResult
 }
 
-func (t *Task) SetSpeedThreshold(threshold chan bytesize.ByteSize) {
-	t.speedThreshold = threshold
-}
 func (t *Task) Execute() {
 	for t.result.TryTimes <= t.retryTimes {
 		t.result.TryTimes++
@@ -96,15 +92,5 @@ func (t *Task) download() {
 				break
 			}
 		}
-	}
-}
-
-func New(source string, target string, timeout time.Duration, retryTimes int) *Task {
-	return &Task{
-		source:     source,
-		target:     target,
-		timeout:    timeout,
-		retryTimes: retryTimes,
-		result:     &taskResult.TaskResult{},
 	}
 }
