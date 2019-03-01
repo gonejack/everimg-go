@@ -16,8 +16,8 @@ type service struct {
 	running bool
 }
 
-func (srv *service) mainRoutine() {
-	srv.running = true
+func (s *service) mainRoutine() {
+	s.running = true
 
 	ticker := time.Tick(time.Second)
 
@@ -33,33 +33,35 @@ func (srv *service) mainRoutine() {
 
 			if err == nil {
 				logger.Debugf("生成心跳日志: %s", byts)
-				srv.writer.WriteBytes(byts)
+
+				s.writer.WriteBytes(byts)
 			} else {
 				logger.Errorf("生成心跳日志出错: %s", err)
 			}
-		case <-srv.signal:
+		case <-s.signal:
 			logger.Debugf("退出心跳线程")
-			srv.running = false
+
+			s.running = false
 
 			return
 		}
 	}
 }
 
-func (srv *service) Start() {
-	srv.writer.Start()
+func (s *service) Start() {
+	s.writer.Start()
 
-	go srv.mainRoutine()
+	go s.mainRoutine()
 }
 
-func (srv *service) Stop() {
-	srv.signal <- os.Interrupt
+func (s *service) Stop() {
+	s.signal <- os.Interrupt
 
-	for srv.running {
+	for s.running {
 		time.Sleep(time.Millisecond * 100)
 	}
 
-	srv.writer.Stop()
+	s.writer.Stop()
 }
 
 func New() (srv *service) {

@@ -13,6 +13,7 @@ type Interface interface {
 
 type ResultInterface interface {
 	IsSuc() bool
+	GetSource() string
 	GetTarget() string
 	GetError() error
 	GetInfo() string

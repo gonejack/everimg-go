@@ -27,7 +27,7 @@ func SecondsToText(seconds int) (text string)  {
 	}
 
 	if text == "" {
-		text = "1秒"
+		text = "0秒"
 	}
 
 	return

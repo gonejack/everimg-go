@@ -135,7 +135,7 @@ func (w *Writer) close() {
 	w.closeTimer = nil
 	w.wroteLen = 0
 }
-func (w *Writer) write(str string, byts []byte) {
+func (w *Writer) write(str string, bs []byte) {
 	if w.open() {
 		var length int
 
@@ -148,8 +148,8 @@ func (w *Writer) write(str string, byts []byte) {
 			w.wroteLen += int64(length)
 		}
 
-		if length = len(byts); length > 0 {
-			_, err := w.writer.Write(byts)
+		if length = len(bs); length > 0 {
+			_, err := w.writer.Write(bs)
 			if err != nil {
 				w.logger.Errorf("写内容失败: %s", err)
 			}
@@ -159,6 +159,7 @@ func (w *Writer) write(str string, byts []byte) {
 
 		if w.config.UpdateSize > 0 && w.wroteLen >= w.config.UpdateSize {
 			w.logger.Infof("写入长度达到限制[%s bytes]", w.config.UpdateSize)
+
 			w.close()
 		}
 	} else {

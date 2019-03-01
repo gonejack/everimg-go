@@ -1,16 +1,11 @@
 package httpDownloader
 
 import (
-	"errors"
 	"everimg-go/utils/downloader"
-	"fmt"
+	"everimg-go/utils/downloader/httpDownloader/internal/task"
+	"everimg-go/utils/downloader/httpDownloader/internal/taskGroup"
 	"github.com/inhies/go-bytesize"
-	"io"
 	"io/ioutil"
-	"net/http"
-	"os"
-	"path/filepath"
-	"sync"
 	"time"
 )
 
@@ -20,7 +15,7 @@ type httpDownloader struct {
 	config        Config
 	taskThrottle  chan int
 	speedThrottle chan bytesize.ByteSize
-	taskGroups    chan *taskGroup
+	taskGroups    chan *taskGroup.TaskGroup
 }
 
 func (d *httpDownloader) Download(source string, target string, timeout time.Duration, retryTimes int) downloader.ResultInterface {
@@ -30,27 +25,17 @@ func (d *httpDownloader) DownloadToTemp(source string, timeout time.Duration, re
 	return d.DownloadAllToTemp([]string{source}, timeout, retryTimes)[0]
 }
 func (d *httpDownloader) DownloadAll(sources []string, targets []string, timeoutForEach time.Duration, retryTimesForEach int) (results []downloader.ResultInterface) {
-	group := &taskGroup{
-		wg: &sync.WaitGroup{},
+	var tasks []*task.Task
+
+	for idx, source := range sources {
+		t := task.New(source, targets[idx], timeoutForEach, retryTimesForEach)
+
+		t.SetSpeedThreshold(d.speedThrottle)
+
+		tasks = append(tasks, t)
 	}
 
-	for i, source := range sources {
-		group.tasks = append(group.tasks, &task{
-			source:     source,
-			target:     targets[i],
-			timeout:    timeoutForEach,
-			retryTimes: retryTimesForEach,
-		})
-		group.wg.Add(1)
-	}
-
-	d.taskGroups <- group
-
-	group.wg.Wait()
-
-	for _, t := range group.tasks {
-		results = append(results, t.result)
-	}
+	results = d.executeTasks(tasks)
 
 	return
 }
@@ -59,92 +44,24 @@ func (d *httpDownloader) DownloadAllToTemp(sources []string, timeout time.Durati
 
 	for range sources {
 		tmp, _ := ioutil.TempFile("", "*.tmp")
+
 		targets = append(targets, tmp.Name())
 	}
 
 	return d.DownloadAll(sources, targets, timeout, retryTimesForEach)
 }
 
-type readerFunc func(p []byte) (n int, err error)
+func (d *httpDownloader) executeTasks(tasks []*task.Task) (results []downloader.ResultInterface) {
+	group := taskGroup.New(tasks)
+	group.SetTaskThreshold(d.taskThrottle)
 
-func (rf readerFunc) Read(p []byte) (n int, err error) { return rf(p) }
+	d.taskGroups <- group
 
+	return group.WaitForResults()
+}
 func (d *httpDownloader) mainRoutine() {
 	for group := range d.taskGroups {
-		for _, t := range group.tasks {
-			<-d.taskThrottle
-
-			go func(task *task) {
-				task.result = &taskResult{
-					begin: time.Now(),
-				}
-
-				defer func() {
-					d.taskThrottle <- 1
-
-					task.result.suc = task.result.err == nil
-					task.result.from = task.source
-					task.result.target = task.target
-					task.result.end = time.Now()
-
-					group.wg.Done()
-				}()
-
-				resp, err := http.Get(task.source)
-				if err != nil {
-					task.result.err = err
-					return
-				}
-				defer func() {
-					cerr := resp.Body.Close()
-					if task.result.err == nil {
-						task.result.err = cerr
-					}
-				}()
-
-				task.target, _ = filepath.Abs(task.target)
-				file, err := os.Create(task.target)
-				if err != nil {
-					task.result.err = err
-					return
-				}
-				defer func() {
-					cerr := file.Close()
-					if task.result.err == nil {
-						task.result.err = cerr
-					}
-				}()
-
-				timer := time.After(task.timeout)
-				reader := readerFunc(func(p []byte) (int, error) {
-					select {
-					case <-timer:
-						return 0, errors.New(fmt.Sprintf("timed out[limit=%s]", task.timeout))
-					default:
-						return resp.Body.Read(p)
-					}
-				})
-				if d.speedThrottle == nil {
-					n, e := io.Copy(file, reader)
-
-					task.result.length = n
-					task.result.err = e
-				} else {
-					for {
-						n, e := io.CopyN(file, reader, int64(<-d.speedThrottle))
-
-						task.result.length += n
-
-						if e != nil {
-							if e != io.EOF {
-								task.result.err = e
-							}
-							break
-						}
-					}
-				}
-			}(t)
-		}
+		group.Execute()
 	}
 }
 func (d *httpDownloader) speedRoutine() {
@@ -176,7 +93,7 @@ func New(config Config) *httpDownloader {
 	d := &httpDownloader{
 		config:       config,
 		taskThrottle: make(chan int, config.Concurrent),
-		taskGroups:   make(chan *taskGroup, 100),
+		taskGroups:   make(chan *taskGroup.TaskGroup, 100),
 	}
 
 	for i := 0; i < config.Concurrent; i++ {
