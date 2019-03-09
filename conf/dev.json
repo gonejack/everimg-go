@@ -1,0 +1,17 @@
+{
+    "app": {
+
+    },
+    "services": {
+        "evernote": {
+            "sandbox": true,
+            "china": false,
+            "token": "S=s1:U=94fa9:E=16e0b74acc8:C=166b3c38050:P=1cd:A=en-devtoken:V=2:H=19a401685d1eb6f1263663bb6d560e3e"
+        }
+    },
+    "workers": {
+        "updateWorker": {
+            "type": "noteUpdateWorker"
+        }
+    }
+}

@@ -35,5 +35,5 @@ func (r *TaskResult) GetInfo() string {
 	total := bytesize.ByteSize(r.Length)
 	avg := float64(total) / duration.Seconds()
 
-	return fmt.Sprintf("Total: %s, Average: %s/s, Duration: %s, downloadTimes: %d", bytesize.ByteSize(r.Length), bytesize.ByteSize(avg), duration.Round(time.Millisecond*10), r.TryTimes)
+	return fmt.Sprintf("Total: %s, Average: %s/s, Duration: %s, tryTimes: %d", bytesize.ByteSize(r.Length), bytesize.ByteSize(avg), duration.Round(time.Millisecond*100), r.TryTimes)
 }

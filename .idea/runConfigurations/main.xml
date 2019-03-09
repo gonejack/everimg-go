@@ -6,6 +6,9 @@
     <module name="everimg-go" />
     <working_directory value="$PROJECT_DIR$" />
     <useCustomBuildTags value="true" />
+    <envs>
+      <env name="CONF_FILE" value="./conf/dev.json" />
+    </envs>
     <kind value="PACKAGE" />
     <filePath value="$PROJECT_DIR$/src/main/main.go" />
     <package value="everimg-go" />

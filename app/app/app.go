@@ -35,10 +35,11 @@ func New() (a *App) {
 	for workerName := range viper.GetStringMap("workers") {
 		workerConf := viper.Sub("workers." + workerName)
 		workerType := workerConf.GetString("type")
-		a.logger.Infof("构建worker: %s[type=%s]", workerName, workerType)
 
+		workerConf.SetDefault("enable", true)
 		if workerConf.GetBool("enable") {
 			a.workers = append(a.workers, worker.NewWorker(workerType, workerName, workerConf))
+			a.logger.Infof("构建worker: %s[type=%s]", workerName, workerType)
 		} else {
 			a.logger.Infof("worker[%s]未启用，跳过构建", workerName)
 		}

@@ -3,11 +3,12 @@ package defaultDownloader
 import (
 	"everimg-go/utils/downloader"
 	"everimg-go/utils/downloader/httpDownloader"
+	"fmt"
 	"strings"
 	"time"
 )
 
-func chooseDefaultDownloaderByURL(url string) downloader.Interface  {
+func chooseDownloader(url string) downloader.Interface  {
 	switch true {
 	case strings.HasPrefix(url, "http"):
 		return httpDownloader.Default()
@@ -17,17 +18,17 @@ func chooseDefaultDownloaderByURL(url string) downloader.Interface  {
 }
 
 func Download(url string, target string, timeout time.Duration, retries int) downloader.ResultInterface {
-	d := chooseDefaultDownloaderByURL(url)
+	d := chooseDownloader(url)
 
 	if d == nil {
-		panic("no downloader found")
+		panic(fmt.Sprintf("No downloader found for url: %s", url))
 	} else {
 		return d.Download(url, target, timeout, retries)
 	}
 }
 
 func DownloadToTemp(url string, timeout time.Duration, retries int) downloader.ResultInterface {
-	d := chooseDefaultDownloaderByURL(url)
+	d := chooseDownloader(url)
 
 	if d == nil {
 		panic("no downloader found")

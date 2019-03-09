@@ -7,7 +7,7 @@ import (
 )
 
 func Init() {
-	logger := log.NewLogger("Init")
+	logger := log.NewLogger("CONF")
 
 	env := func(key string, def string) string {
 		if val, exist := os.LookupEnv(key); exist && val != "" {
