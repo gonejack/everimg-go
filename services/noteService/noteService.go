@@ -24,12 +24,13 @@ func (s *noteService) GetRecentUpdateNotes() (notes []edam.Note) {
 			_ = s.getNote(meta)
 		}
 	}
+
+	panic("todo")
 }
 
 func (s *noteService) getRecentUpdateNoteMetas() (metaList edam.NotesMetadataList, err error) {
-
+	panic("todo")
 }
-
 
 func (s *noteService) Start() {
 	clientCtx, _ := context.WithTimeout(context.Background(), time.Duration(15) * time.Second)

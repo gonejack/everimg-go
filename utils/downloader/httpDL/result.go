@@ -1,4 +1,4 @@
-package taskResult
+package httpDL
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-type TaskResult struct {
+type Result struct {
 	Suc    bool
 	From   string
 	Target string
@@ -18,19 +18,19 @@ type TaskResult struct {
 	TryTimes int
 }
 
-func (r *TaskResult) IsSuc() bool {
+func (r *Result) IsSuc() bool {
 	return r.Suc
 }
-func (r *TaskResult) GetSource() string {
+func (r *Result) GetSource() string {
 	return r.From
 }
-func (r *TaskResult) GetTarget() string {
+func (r *Result) GetTarget() string {
 	return r.Target
 }
-func (r *TaskResult) GetError() error {
+func (r *Result) GetError() error {
 	return r.Err
 }
-func (r *TaskResult) GetInfo() string {
+func (r *Result) GetMessage() string {
 	duration := r.End.Sub(r.Begin)
 	total := bytesize.ByteSize(r.Length)
 	avg := float64(total) / duration.Seconds()

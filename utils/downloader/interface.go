@@ -16,5 +16,5 @@ type ResultInterface interface {
 	GetSource() string
 	GetTarget() string
 	GetError() error
-	GetInfo() string
+	GetMessage() string
 }

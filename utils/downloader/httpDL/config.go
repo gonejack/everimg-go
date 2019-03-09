@@ -1,6 +1,8 @@
-package httpDownloader
+package httpDL
 
-import "github.com/inhies/go-bytesize"
+import (
+	"github.com/inhies/go-bytesize"
+)
 
 type Config struct {
 	Concurrent int

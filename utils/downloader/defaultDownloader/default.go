@@ -2,7 +2,7 @@ package defaultDownloader
 
 import (
 	"everimg-go/utils/downloader"
-	"everimg-go/utils/downloader/httpDownloader"
+	"everimg-go/utils/downloader/httpDL"
 	"fmt"
 	"strings"
 	"time"
@@ -11,7 +11,7 @@ import (
 func chooseDownloader(url string) downloader.Interface  {
 	switch true {
 	case strings.HasPrefix(url, "http"):
-		return httpDownloader.Default()
+		return httpDL.Default()
 	default:
 		return nil
 	}
