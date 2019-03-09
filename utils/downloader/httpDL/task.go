@@ -43,8 +43,8 @@ func (w *executor) Execute() {
 	w.result.From = w.conf.Source
 	w.result.Target = w.conf.Target
 }
-func (w *executor) GetResult() Result {
-	return w.result
+func (w *executor) GetResult() *Result {
+	return &w.result
 }
 func (w *executor) download() {
 	w.resp, w.err = (&http.Client{Timeout: w.conf.Control.Timeout}).Get(w.conf.Source)

@@ -28,7 +28,7 @@ func (group *taskGroup) Execute() {
 		}(t)
 	}
 }
-func (group *taskGroup) WaitForResults() (results []Result) {
+func (group *taskGroup) WaitForResults() (results []*Result) {
 	group.waitGroup.Wait()
 
 	for _, t := range group.tasks {

@@ -11,23 +11,23 @@ type downloader struct {
 	groups chan *taskGroup
 }
 
-func (d *downloader) Download(task Task) Result {
+func (d *downloader) Download(task Task) *Result {
 	return d.DownloadAll([]Task{task})[0]
 }
 
-func (d *downloader) DownloadAll(task [] Task) (results []Result) {
+func (d *downloader) DownloadAll(task [] Task) (results []*Result) {
 	var executors []*executor
 
 	for _, conf := range task {
 		executors = append(executors, d.taskFactory.newExecutor(conf))
 	}
 
-	results = d.execute(executors)
+	results = d.execAsGroup(executors)
 
 	return
 }
 
-func (d *downloader) execute(tasks []*executor) (results []Result) {
+func (d *downloader) execAsGroup(tasks []*executor) (results []*Result) {
 	group := d.groupFactory.newGroup(tasks)
 
 	d.groups <- group

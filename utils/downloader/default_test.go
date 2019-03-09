@@ -1,4 +1,4 @@
-package defaultDownloader
+package downloader
 
 import (
 	"testing"
