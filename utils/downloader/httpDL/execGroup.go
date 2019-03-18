@@ -4,13 +4,13 @@ import (
 	"sync"
 )
 
-type taskGroup struct {
+type execGroup struct {
 	tasks     []*executor
 	threshold chan int
 	waitGroup *sync.WaitGroup
 }
 
-func (group *taskGroup) Execute() {
+func (group *execGroup) execute() {
 	for _, t := range group.tasks {
 		if group.threshold != nil {
 			<-group.threshold
@@ -24,25 +24,25 @@ func (group *taskGroup) Execute() {
 				group.waitGroup.Done()
 			}()
 
-			task.Execute()
+			task.execute()
 		}(t)
 	}
 }
-func (group *taskGroup) WaitForResults() (results []*Result) {
+func (group *execGroup) waitForResults() (results []*result) {
 	group.waitGroup.Wait()
 
 	for _, t := range group.tasks {
-		results = append(results, t.GetResult())
+		results = append(results, t.getResult())
 	}
 
 	return results
 }
 
-type taskGroupFactory struct {
+type execGroupFactory struct {
 	taskThreshold chan int
 }
-func (factory *taskGroupFactory) newGroup(tasks []*executor) (group *taskGroup) {
-	group = &taskGroup{
+func (factory *execGroupFactory) newGroup(tasks []*executor) (group *execGroup) {
+	group = &execGroup{
 		tasks:     tasks,
 		waitGroup: &sync.WaitGroup{},
 		threshold: factory.taskThreshold,

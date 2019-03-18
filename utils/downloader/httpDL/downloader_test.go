@@ -30,14 +30,14 @@ func Test_httpDL_Download(t *testing.T) {
 	for _, url := range urls {
 		tasks = append(tasks, Task{
 			Source:url,
-			Control:Control{
+			Control: TaskControl{
 				Timeout:time.Second * 12,
 				RetryTimes:1,
 			},
 		})
 	}
 
-	for _, r := range Default().DownloadAll(tasks) {
+	for _, r := range GetDefaultDownloader().DownloadAll(tasks) {
 		if r.IsSuc() {
 			t.Logf("succeed: %s", r.GetTarget())
 			t.Logf("succeed: %s", r.GetMessage())

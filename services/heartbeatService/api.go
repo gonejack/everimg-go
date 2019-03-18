@@ -22,4 +22,3 @@ func Stop() {
 
 	logger.Infof("关闭完成")
 }
-

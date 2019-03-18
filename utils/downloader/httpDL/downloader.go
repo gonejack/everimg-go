@@ -1,25 +1,44 @@
 package httpDL
 
+import (
+	"github.com/inhies/go-bytesize"
+	"time"
+)
+
 var defaultDownloader *downloader = nil
 
 type downloader struct {
 	config Config
 
-	taskFactory  *execFactory
-	groupFactory *taskGroupFactory
+	execFactory  *execFactory
+	groupFactory *execGroupFactory
 
-	groups chan *taskGroup
+	groups chan *execGroup
 }
 
-func (d *downloader) Download(task Task) *Result {
+func (d *downloader) execAsGroup(execs []*executor) (results []*result) {
+	group := d.groupFactory.newGroup(execs)
+
+	d.groups <- group
+
+	return group.waitForResults()
+}
+
+func (d *downloader) mainRoutine() {
+	for group := range d.groups {
+		group.execute()
+	}
+}
+
+func (d *downloader) Download(task Task) *result {
 	return d.DownloadAll([]Task{task})[0]
 }
 
-func (d *downloader) DownloadAll(task [] Task) (results []*Result) {
+func (d *downloader) DownloadAll(task [] Task) (results []*result) {
 	var executors []*executor
 
 	for _, conf := range task {
-		executors = append(executors, d.taskFactory.newExecutor(conf))
+		executors = append(executors, d.execFactory.newExec(conf))
 	}
 
 	results = d.execAsGroup(executors)
@@ -27,16 +46,59 @@ func (d *downloader) DownloadAll(task [] Task) (results []*Result) {
 	return
 }
 
-func (d *downloader) execAsGroup(tasks []*executor) (results []*Result) {
-	group := d.groupFactory.newGroup(tasks)
+func NewDownloader(config Config) *downloader {
+	d := &downloader{
+		config: config,
 
-	d.groups <- group
+		execFactory: &execFactory{
+			speedThreshold: nil,
+		},
+		groupFactory: &execGroupFactory{
+			taskThreshold: nil,
+		},
 
-	return group.WaitForResults()
+		groups: make(chan *execGroup, 100),
+	}
+
+	if config.TotalSpeed > 0 {
+		d.execFactory.speedThreshold = make(chan bytesize.ByteSize)
+
+		chunkNum := config.Concurrent * 10
+		chunk := config.TotalSpeed / bytesize.ByteSize(chunkNum)
+		if chunk <= bytesize.B {
+			chunk = bytesize.B
+		}
+		tick := time.Second / time.Duration(chunkNum)
+		if tick <= 0 {
+			tick = time.Nanosecond
+		}
+
+		go func() {
+			var ticker = time.Tick(tick)
+			for {
+				<-ticker
+
+				d.execFactory.speedThreshold <- chunk
+			}
+		}()
+	}
+	if config.Concurrent > 0 {
+		d.groupFactory.taskThreshold = make(chan int, config.Concurrent)
+
+		for i := 0; i < config.Concurrent; i++ {
+			d.groupFactory.taskThreshold <- 1
+		}
+	}
+
+	go d.mainRoutine()
+
+	return d
 }
 
-func (d *downloader) mainRoutine() {
-	for group := range d.groups {
-		group.Execute()
+func GetDefaultDownloader() *downloader {
+	if defaultDownloader == nil {
+		defaultDownloader = NewDownloader(DefaultConfig())
 	}
+
+	return defaultDownloader
 }
