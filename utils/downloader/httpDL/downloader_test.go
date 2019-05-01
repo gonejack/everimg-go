@@ -39,10 +39,10 @@ func Test_httpDL_Download(t *testing.T) {
 
 	for _, r := range GetDefaultDownloader().DownloadAll(tasks) {
 		if r.IsSuc() {
-			t.Logf("succeed: %s", r.GetTarget())
-			t.Logf("succeed: %s", r.GetMessage())
+			t.Logf("Succeed: %s", r.GetTarget())
+			t.Logf("Succeed: %s", r.GetMessage())
 		} else {
-			t.Errorf("failed: %s", r.GetError())
+			t.Errorf("Failed: %s", r.GetError())
 		}
 	}
 }

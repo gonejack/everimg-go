@@ -12,7 +12,7 @@ type Config struct {
 func DefaultConfig() (c Config) {
 	c = Config{
 		Concurrent: 5,
-		TotalSpeed: 0,
+		TotalSpeed: 2 * bytesize.MB,
 	}
 
 	return

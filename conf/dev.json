@@ -1,8 +1,25 @@
 {
     "app": {
-
     },
     "services": {
+        "kafka": {
+            "本地读": {
+                "brokers": "127.0.0.1:9090,127.0.0.1:9091,127.0.0.1:9092",
+                "sasl": {
+                    "enable": true,
+                    "user": "admin",
+                    "password": "admin"
+                }
+            },
+            "本地写": {
+                "brokers": "127.0.0.1:9090,127.0.0.1:9091,127.0.0.1:9092",
+                "sasl": {
+                    "enable": true,
+                    "user": "admin",
+                    "password": "admin"
+                }
+            }
+        },
         "evernote": {
             "sandbox": true,
             "china": false,
@@ -10,7 +27,12 @@
         }
     },
     "workers": {
+        "kafkaWorker": {
+            "enable": true,
+            "type": "kafkaTestWorker"
+        },
         "updateWorker": {
+            "enable": false,
             "type": "noteUpdateWorker"
         }
     }

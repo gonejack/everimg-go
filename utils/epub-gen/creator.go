@@ -5,10 +5,9 @@ import (
 )
 
 type creator struct {
-	book Book
-	ctl Control
-
-	wd string
+	book    Book
+	control Control
+	workDir string
 }
 
 func (c *creator) create() error {
@@ -31,8 +30,8 @@ func Epub(book Book, ctl Control) (err error) {
 	c := &creator{}
 
 	c.book = book
-	c.ctl = ctl
-	c.wd = kit.Uuid()
+	c.control = ctl
+	c.workDir = kit.Uuid()
 
 	return c.create()
 }

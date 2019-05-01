@@ -3,6 +3,7 @@ package app
 import (
 	"everimg-go/app/log"
 	"everimg-go/modules/worker"
+	"everimg-go/services/kafkaService"
 	"github.com/spf13/viper"
 	"os"
 )
@@ -14,9 +15,13 @@ type App struct {
 }
 
 func (a *App) Start() {
+	kafkaService.Start()
+
 	for _, w := range a.workers {
 		w.Start()
 	}
+
+	a.mainRoutine()
 }
 
 func (a *App) Stop(sig os.Signal) {

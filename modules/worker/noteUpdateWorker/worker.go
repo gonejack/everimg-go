@@ -4,16 +4,14 @@ import (
 	"github.com/spf13/viper"
 )
 
-
 type updateWorker struct {
+}
+
+func (worker *updateWorker) Start() {
 
 }
 
-func (*updateWorker) Start() {
-
-}
-
-func (*updateWorker) Stop() {
+func (worker *updateWorker) Stop() {
 
 }
 
