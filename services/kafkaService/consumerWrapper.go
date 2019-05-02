@@ -51,11 +51,11 @@ func (cw *consumerWrapperType) unsubscribe(unSubscribeQueue chan []byte) (ok boo
 			if subQueue == unSubscribeQueue {
 				ok = true
 
-				logger.Infof("消费组[topic=%s]减少一个订阅", topic)
+				logger.Infof("消费者[topic=%s]减少一个订阅", topic)
 				subQueues = append(subQueues[0:index], subQueues[index+1:]...)
 
 				if len(subQueues) == 0 {
-					logger.Infof("消费组[topic=%s]订阅数为0，执行关闭", topic)
+					logger.Infof("消费者[topic=%s]没有订阅，执行关闭", topic)
 
 					value, exist := cw.topicConsumers.Load(topic)
 
@@ -97,6 +97,8 @@ func (cw *consumerWrapperType) readThread(consumer *cluster.Consumer, topic stri
 				}
 			} else {
 				logger.Infof("消费者[topic=%s]退出读取线程", topic)
+
+				return
 			}
 		case err := <-consumer.Errors():
 			if err != nil {
@@ -111,7 +113,7 @@ func (cw *consumerWrapperType) Close() {
 		topic, consumer := k.(string), v.(*cluster.Consumer)
 
 		if err := consumer.Close(); err == nil {
-			logger.Infof("消费者[topic=%s]已关闭", topic)
+			logger.Debugf("消费者[topic=%s]已关闭", topic)
 		} else {
 			logger.Errorf("关闭消费者[topic=%s]出错: %s", topic, err)
 		}

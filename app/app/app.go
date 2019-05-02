@@ -25,9 +25,13 @@ func (a *App) Start() {
 }
 
 func (a *App) Stop(sig os.Signal) {
+	a.logger.Infof("收到系统信号: %s", sig)
+
 	for _, w := range a.workers {
 		w.Stop()
 	}
+
+	kafkaService.Stop()
 }
 
 func New() (a *App) {

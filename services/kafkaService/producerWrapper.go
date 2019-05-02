@@ -20,10 +20,8 @@ func (pw *producerWrapperType) getProduceQueue(topic string) (queue chan []byte)
 }
 
 func (pw *producerWrapperType) writeMessageThread(topic string, msgQueue chan []byte) {
-	producerInput := pw.producer.Input()
-
 	for msg := range msgQueue {
-		producerInput <- &sarama.ProducerMessage{
+		pw.producer.Input() <- &sarama.ProducerMessage{
 			Topic: topic,
 			Value: sarama.ByteEncoder(msg),
 		}
@@ -34,6 +32,8 @@ func (pw *producerWrapperType) readErrorThread() {
 	for err := range pw.producer.Errors() {
 		logger.Errorf("生产者[cluster=%s]出错: %s", pw.clusterConfig.GetString("name"), err)
 	}
+
+	logger.Infof("生产者停止")
 }
 
 func (pw *producerWrapperType) Close() {

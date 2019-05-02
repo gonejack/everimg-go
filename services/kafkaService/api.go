@@ -17,7 +17,7 @@ func Subscribe(clusterName, groupId, topic string) chan []byte {
 	if cacheItem, exist := consumerWrappers.Load(clusterName); exist {
 		consumerWrapper = cacheItem.(*consumerWrapperType)
 	} else {
-		logger.Infof("构建集群消费实例[clusterName=%s]", clusterName)
+		logger.Infof("构建集群消费者[clusterName=%s]", clusterName)
 
 		clusterConfig := viper.Sub("services.kafka." + clusterName)
 		clusterConfig.SetDefault("name", clusterName)
@@ -41,7 +41,7 @@ func UnSubscribe(queueToUnSubscribe chan []byte) (done bool) {
 	})
 
 	if !done {
-		logger.Errorf("退订失败，未找到集群消费实例")
+		logger.Errorf("退订失败，未找到集群消费者")
 	}
 
 	close(queueToUnSubscribe)
@@ -55,7 +55,7 @@ func Produce(clusterName, topic string) chan []byte  {
 	if cacheItem, exist := producerWrappers.Load(clusterName); exist {
 		producerWrapper = cacheItem.(*producerWrapperType)
 	} else {
-		logger.Infof("构建集群生产实例[clusterName=%s]", clusterName)
+		logger.Infof("构建集群生产者[clusterName=%s]", clusterName)
 
 		clusterConfig := viper.Sub("services.kafka." + clusterName)
 		clusterConfig.SetDefault("name", clusterName)
@@ -85,7 +85,7 @@ func Stop() {
 	consumerWrappers.Range(func(k, v interface{}) bool {
 		clusterName, consumerWrapper := k.(string), v.(*consumerWrapperType)
 
-		logger.Infof("清理集群消费[%s]实例", clusterName)
+		logger.Infof("清理集群[%s]消费者", clusterName)
 		consumerWrappers.Delete(clusterName)
 		consumerWrapper.Close()
 
@@ -95,7 +95,7 @@ func Stop() {
 	producerWrappers.Range(func(k, v interface{}) bool {
 		clusterName, producerWrapper := k.(string), v.(*producerWrapperType)
 
-		logger.Infof("清理集群生产[%s]实例", clusterName)
+		logger.Infof("清理集群[%s]生产者", clusterName)
 		producerWrappers.Delete(clusterName)
 		producerWrapper.Close()
 
