@@ -4,6 +4,7 @@ import (
 	"everimg-go/app/log"
 	"everimg-go/services/kafkaService"
 	"github.com/spf13/viper"
+	"os"
 	"strconv"
 	"time"
 )
@@ -11,7 +12,8 @@ import (
 var logger = log.NewLogger("Worker:Kafka")
 
 type worker struct {
-
+	produceSignal chan os.Signal
+	consumeSignal chan os.Signal
 }
 
 func (w *worker) Start() {
@@ -23,8 +25,11 @@ func (w *worker) Start() {
 	logger.Infof("启动完成")
 }
 
-func (*worker) Stop() {
+func (w *worker) Stop() {
 	logger.Infof("开始关闭")
+
+	w.produceSignal <- os.Interrupt
+	w.consumeSignal <- os.Interrupt
 
 	logger.Infof("关闭完成")
 }
@@ -32,25 +37,44 @@ func (*worker) Stop() {
 func (w *worker) produceRoutine()  {
 	queue := kafkaService.Produce("本地写", "test-topic")
 
-	for {
-		time.Sleep(time.Second)
+	loop: for {
+		select {
+		case <-w.produceSignal:
+			kafkaService.UnProduce(queue)
 
-		msg := strconv.Itoa(int(time.Now().Unix()))
+			break loop
+		default:
+			time.Sleep(time.Second)
 
-		queue <- []byte(msg)
+			msg := strconv.Itoa(int(time.Now().Unix()))
 
-		logger.Infof("发送消息: %s", msg)
+			queue <- []byte(msg)
+
+			logger.Infof("发送消息: %s", msg)
+		}
 	}
+
+	logger.Infof("退出生产线程")
 }
 
 func (w *worker) consumeRoutine()  {
 	queue := kafkaService.Subscribe("本地读", "test-group", "test-topic")
 
 	for msg := range queue {
-		logger.Infof("读取到消息: %s", string(msg))
+		select {
+		case <- w.consumeSignal:
+			kafkaService.UnSubscribe(queue)
+		default:
+			logger.Infof("读取到消息: %s", string(msg))
+		}
 	}
+
+	logger.Infof("退出消费线程")
 }
 
 func New(name string, conf *viper.Viper) *worker {
-	return &worker{}
+	return &worker{
+		produceSignal: make(chan os.Signal, 1),
+		consumeSignal: make(chan os.Signal, 1),
+	}
 }
