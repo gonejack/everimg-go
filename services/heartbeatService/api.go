@@ -1,10 +1,10 @@
 package heartbeatService
 
 import (
-	"everimg-go/app/log"
+	"github.com/gonejack/glogger"
 )
 
-var logger = log.NewLogger("Service:Heartbeat")
+var logger = glogger.NewLogger("Service:Heartbeat")
 var srv = New()
 
 func Start() {

@@ -1,12 +1,12 @@
 package kafkaService
 
 import (
-	"everimg-go/app/log"
+	"github.com/gonejack/glogger"
 	"github.com/spf13/viper"
 	"sync"
 )
 
-var logger = log.NewLogger("Service:Kafka")
+var logger = glogger.NewLogger("Service:Kafka")
 
 var consumerWrappers sync.Map
 var producerWrappers sync.Map
@@ -49,7 +49,7 @@ func UnSubscribe(queueToUnSubscribe chan []byte) (done bool) {
 	return
 }
 
-func Produce(clusterName, topic string) chan []byte  {
+func Produce(clusterName, topic string) chan []byte {
 	var producerWrapper *producerWrapperType
 
 	if cacheItem, exist := producerWrappers.Load(clusterName); exist {

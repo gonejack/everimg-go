@@ -2,8 +2,9 @@ package heartbeatService
 
 import (
 	"encoding/json"
-	"everimg-go/app/log"
-	"everimg-go/services/heartbeatService/internal/writer"
+	"github.com/gonejack/gwriter"
+	"github.com/gonejack/gwriter/config"
+	"log"
 	"time"
 
 	"os"
@@ -11,7 +12,7 @@ import (
 
 type service struct {
 	logger  log.Logger
-	writer  writer.Interface
+	writer  gwriter.Writer
 	signal  chan os.Signal
 	running bool
 }
@@ -69,7 +70,7 @@ func New() (srv *service) {
 		signal: make(chan os.Signal),
 	}
 
-	writerConf := writer.Config{
+	writerConf := config.Config{
 		PathTpl:  "{dir}/{topic}{base_ext}{write_ext}",
 		BaseExt:  ".msg",
 		WriteExt: "",
@@ -81,7 +82,7 @@ func New() (srv *service) {
 		UpdateMoment: "00:01:00",
 	}
 
-	srv.writer = writer.New("心跳消息文件", writerConf)
+	srv.writer = gwriter.NewWriter("心跳消息文件", writerConf)
 
 	return
 }

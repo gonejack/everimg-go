@@ -1,15 +1,15 @@
 package app
 
 import (
-	"everimg-go/app/log"
 	"everimg-go/modules/worker"
 	"everimg-go/services/kafkaService"
+	"github.com/gonejack/glogger"
 	"github.com/spf13/viper"
 	"os"
 )
 
 type App struct {
-	logger  log.Logger
+	logger  glogger.Logger
 	signal  chan os.Signal
 	workers []worker.Interface
 }
@@ -37,7 +37,7 @@ func (a *App) Stop(sig os.Signal) {
 func New() (a *App) {
 	a = &App{
 		signal: make(chan os.Signal, 1),
-		logger: log.NewLogger("App"),
+		logger: glogger.NewLogger("App"),
 	}
 
 	a.logger.Infof("开始构建")

@@ -1,13 +1,13 @@
 package conf
 
 import (
-	"everimg-go/app/log"
+	"github.com/gonejack/glogger"
 	"github.com/spf13/viper"
 	"os"
 )
 
 func Init() {
-	logger := log.NewLogger("CONF")
+	logger := glogger.NewLogger("CONF")
 
 	env := func(key string, def string) string {
 		if val, exist := os.LookupEnv(key); exist && val != "" {

@@ -2,16 +2,16 @@ package noteService
 
 import (
 	"context"
-	"everimg-go/app/log"
 	"github.com/dreampuf/evernote-sdk-golang/client"
 	"github.com/dreampuf/evernote-sdk-golang/edam"
+	"github.com/gonejack/glogger"
 	"github.com/spf13/viper"
 	"time"
 )
 
 type noteService struct {
-	logger log.Logger
-	conf *viper.Viper
+	logger glogger.Logger
+	conf   *viper.Viper
 
 	userStore edam.UserStore
 }
@@ -33,7 +33,7 @@ func (s *noteService) getRecentUpdateNoteMetas() (metaList edam.NotesMetadataLis
 }
 
 func (s *noteService) Start() {
-	clientCtx, _ := context.WithTimeout(context.Background(), time.Duration(15) * time.Second)
+	clientCtx, _ := context.WithTimeout(context.Background(), time.Duration(15)*time.Second)
 	c := client.NewClient("", "", client.SANDBOX)
 	us, err := c.GetUserStore()
 	if err != nil {

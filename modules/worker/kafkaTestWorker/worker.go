@@ -1,15 +1,15 @@
 package kafkaTestWorker
 
 import (
-	"everimg-go/app/log"
 	"everimg-go/services/kafkaService"
+	"github.com/gonejack/glogger"
 	"github.com/spf13/viper"
 	"os"
 	"strconv"
 	"time"
 )
 
-var logger = log.NewLogger("Worker:Kafka")
+var logger = glogger.NewLogger("Worker:Kafka")
 
 type worker struct {
 	produceSignal chan os.Signal
@@ -31,16 +31,17 @@ func (w *worker) Stop() {
 	w.produceSignal <- os.Interrupt
 	w.consumeSignal <- os.Interrupt
 
-	<- w.produceSignal
-	<- w.consumeSignal
+	<-w.produceSignal
+	<-w.consumeSignal
 
 	logger.Infof("关闭完成")
 }
 
-func (w *worker) produceRoutine()  {
+func (w *worker) produceRoutine() {
 	queue := kafkaService.Produce("本地写", "test-topic")
 
-	loop: for {
+loop:
+	for {
 		select {
 		case <-w.produceSignal:
 			kafkaService.UnProduce(queue)
@@ -61,12 +62,12 @@ func (w *worker) produceRoutine()  {
 	w.produceSignal <- os.Interrupt
 }
 
-func (w *worker) consumeRoutine()  {
+func (w *worker) consumeRoutine() {
 	queue := kafkaService.Subscribe("本地读", "test-group", "test-topic")
 
 	for msg := range queue {
 		select {
-		case <- w.consumeSignal:
+		case <-w.consumeSignal:
 			kafkaService.UnSubscribe(queue)
 		default:
 			logger.Infof("读取到消息: %s", string(msg))
